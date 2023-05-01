@@ -1,5 +1,10 @@
 name: docker-compose-actions-workflow
-on: push
+on:
+  push:
+    branches: [master, staging, dev]
+  pull_request:
+    branches: [master, staging, dev]
+
 jobs:
   test:
     runs-on: ubuntu-latest
