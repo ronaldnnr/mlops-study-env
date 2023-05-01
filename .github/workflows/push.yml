@@ -1,0 +1,43 @@
+name: docker-compose-actions-workflow
+on:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache Docker images and dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/run/docker.sock
+            ./docker-compose.yml
+          key: ${{ runner.os }}-build-${{ hashFiles('**/docker-compose.yml') }}
+      - name: Restore Docker images and dependencies from cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/run/docker.sock
+            ./docker-compose.yml
+          key: ${{ runner.os }}-build-${{ hashFiles('**/docker-compose.yml') }}
+      - name: Validate the Docker Compose file
+        run: docker-compose config
+      - name: Login to Docker registry
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Build the stack and start containers
+        run: |
+          docker-compose up -d
+          sleep 10
+      - name: Test service 1
+        run: |
+          while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080)" != "200" ]] && [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080)" != "201" ]] && [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080)" != "304" ]] && [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080)" != "302" ]]; do sleep 5; done
+      - name: Test service 2
+        run: |
+          while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8081)" != "200" ]] && [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8081)" != "201" ]] && [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8081)" != "301" ]] && [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8081)" != "301" ]]; do sleep 5; done
+      - name: Stop the stack and remove containers
+        run: docker-compose down
