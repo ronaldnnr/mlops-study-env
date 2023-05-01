@@ -30,7 +30,7 @@ jobs:
       - name: Scan Docker images
         run: |
           DOCKER_IMAGE=$(grep "image:" docker-compose.yml | awk '{print $2}')
-          docker scan --accept-license $DOCKER_IMAGE
+          docker scan $DOCKER_IMAGE
       - name: Display Docker scan results
         run: |
           DOCKER_IMAGE=$(grep "image:" docker-compose.yml | awk '{print $2}')
