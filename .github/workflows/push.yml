@@ -27,12 +27,15 @@ jobs:
         with:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: Build the stack
+      - name: Build the stack and start containers
         run: |
-          docker-compose up -d airflow-webserver
-          sleep 40
-      - name: Test
-        run: docker exec airflow-webserver curl -I -s --retry 10 --retry-connrefused http://localhost:8080/
-      - name: Monitor Docker container performance
+          docker-compose up -d
+          sleep 10
+      - name: Test service 1
         run: |
-          docker stats --no-stream
+          while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080)" != "200" ]]; do sleep 5; done
+      - name: Test service 2
+        run: |
+          while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8081)" != "200" ]]; do sleep 5; done
+      - name: Stop the stack and remove containers
+        run: docker-compose down
