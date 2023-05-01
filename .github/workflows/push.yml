@@ -6,11 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack
-        run: docker-compose up -d
-
-      - name: Start services with Docker Compose
         run: |
-          docker-compose -f docker-compose.yml up -d
+          docker-compose up -d
           sleep 40
       - name: Test
         run: docker run --network container:airflow-webserver appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8080/
