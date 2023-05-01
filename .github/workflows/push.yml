@@ -24,11 +24,6 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Build and cache Docker images
-        run: |
-          docker-compose build --parallel
-          docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache
-
       - name: Validate the Docker Compose file
         run: docker-compose config
 
