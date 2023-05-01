@@ -11,6 +11,6 @@ jobs:
       - name: Start services with Docker Compose
         run: |
           docker-compose -f docker-compose.yml up -d
-          sleep 30
+          sleep 40
       - name: Test
         run: docker run --network container:airflow-webserver appropriate/curl -s --retry 10 --retry-connrefused http://localhost:8080/
