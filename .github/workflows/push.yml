@@ -36,6 +36,6 @@ jobs:
           while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080)" != "200" ]]; do sleep 5; done
       - name: Test service 2
         run: |
-          while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8081)" != "200" ]]; do sleep 5; done
+          while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:3000)" != "200" ]]; do sleep 5; done
       - name: Stop the stack and remove containers
         run: docker-compose down
