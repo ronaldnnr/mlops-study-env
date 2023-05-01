@@ -25,16 +25,9 @@ jobs:
       - name: Login to Docker registry
         uses: docker/login-action@v1
         with:
+          registry: <seu-registro>
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: Scan Docker images
-        run: |
-          DOCKER_IMAGE=$(grep "image:" docker-compose.yml | awk '{print $2}')
-          docker scan $DOCKER_IMAGE
-      - name: Display Docker scan results
-        run: |
-          DOCKER_IMAGE=$(grep "image:" docker-compose.yml | awk '{print $2}')
-          docker scan ls $DOCKER_IMAGE
       - name: Build the stack
         run: |
           docker-compose up -d airflow-webserver
