@@ -6,24 +6,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Cache Docker images and dependencies
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: |
-            /var/run/docker.sock
-            ../docker-compose.yml
-          key: ${{ runner.os }}-build-${{ hashFiles('**/docker-compose.yml') }}
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-      - name: List files in directory
-        run: ls -R
-
-      - name: Restore Docker images and dependencies from cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            /var/run/docker.sock
-            ../docker-compose.yml
-          key: ${{ runner.os }}-build-${{ hashFiles('**/docker-compose.yml') }}
 
       - name: Validate the Docker Compose file
         run: docker-compose config
