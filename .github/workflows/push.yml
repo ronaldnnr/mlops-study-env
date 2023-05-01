@@ -21,5 +21,5 @@ jobs:
       - name: Build and push Docker images
         run: |
           docker-compose build
-          docker tag airflow:latest ronaldnnr/airflowtest:latest
-          docker push ronaldnnr/airflowtest:latest
+          docker tag airflow:latest ronaldnnr/airflow-webserver
+          docker push ronaldnnr/airflow-webserver
