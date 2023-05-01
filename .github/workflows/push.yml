@@ -11,14 +11,15 @@ jobs:
         with:
           path: |
             /var/run/docker.sock
-            ./docker-compose.yml
+            ../docker-compose.yml
           key: ${{ runner.os }}-build-${{ hashFiles('**/docker-compose.yml') }}
+
       - name: Restore Docker images and dependencies from cache
         uses: actions/cache@v2
         with:
           path: |
             /var/run/docker.sock
-            ./docker-compose.yml
+            ../docker-compose.yml
           key: ${{ runner.os }}-build-${{ hashFiles('**/docker-compose.yml') }}
 
       - name: Validate the Docker Compose file
