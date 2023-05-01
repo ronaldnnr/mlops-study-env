@@ -5,6 +5,10 @@ x-airflow-common:
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__SCHEDULER__STATSD_ON: True
+    AIRFLOW__SCHEDULER__STATSD_HOST: statsd-exporter
+    AIRFLOW__SCHEDULER__STATSD_PORT: 8125
+    AIRFLOW__SCHEDULER__STATSD_PREFIX: airflow
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow/airflow
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres_airflow/airflow
@@ -12,10 +16,13 @@ x-airflow-common:
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW_HOME: /opt/airflow
+    AIRFLOW_CONFIG: /opt/airflow/airflow.cfg
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
   volumes:
+    - ./airflow.cfg:/opt/airflow/airflow.cfg
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
@@ -270,6 +277,34 @@ services:
     depends_on:
       - postgres_airflow
       - postgres_mlflow
+    
+  statsd-exporter:
+    image: prom/statsd-exporter
+    container_name: airflow-statsd-exporter
+    command: "--statsd.listen-udp=:8125 --web.listen-address=:9102"
+    ports:
+      - 9123:9102
+      - 8125:8125/udp
+
+  prometheus:
+    image: prom/prometheus
+    container_name: airflow-prometheus
+    user: "0"
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/volume:/prometheus
+  
+  grafana:
+    image: grafana/grafana:7.1.5
+    container_name: airflow-grafana
+    environment:
+        GF_SECURITY_ADMIN_USER: admin
+        GF_SECURITY_ADMIN_PASSWORD: password
+        GF_PATHS_PROVISIONING: /grafana/provisioning
+    ports:
+      - 3000:3000
 
   vault:
     image: vault:1.13.1
@@ -279,8 +314,10 @@ services:
       - VAULT_DEV_ROOT_TOKEN_ID=myroot
     volumes:
       - ./vault:/vault/file
-
+      
 volumes:
   mlflow_artifacts:
   postgres-db-volume-airflow:
   postgres-db-volume-mlflow:
+  prometheus_data:
+  grafana_data:
