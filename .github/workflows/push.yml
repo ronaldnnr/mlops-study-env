@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build the stack
         run: |
-          docker-compose up -d docker-compose up  airflow-webserver
+          docker-compose up -d airflow-webserver
           sleep 40
       - name: Test
         run: docker exec airflow-webserver curl -s --retry 10 --retry-connrefused http://localhost:8080/
